@@ -3,15 +3,15 @@ const express = require("express");
 
 const app = express();
 const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "M160195m",
-  database: "eventservice"
+  host: "veranstaltungsservice.csgcsrajxclt.us-east-2.rds.amazonaws.com",
+  user: "SE2019",
+  password: "ServiceEngineering2019",
+  database: "veranstaltungsservice"
 });
 
 app.get("/events", (req, res) => {
   connection.connect();
-  connection.query("SELECT * FROM event;", function(err, rows, fields) {
+  connection.query("SELECT * FROM Event;", function(err, rows, fields) {
     if (err) throw err;
     console.log("The solution is: ", rows[0]);
     res.send("Success!");
@@ -22,7 +22,7 @@ app.get("/events", (req, res) => {
 
 app.get("/events/:id", (req, res) => {
   connection.connect();
-  connection.query(`SELECT * FROM event WHERE id=${req.params.id};`, function(
+  connection.query(`SELECT * FROM Event WHERE id=${req.params.id};`, function(
     err,
     rows,
     fields
