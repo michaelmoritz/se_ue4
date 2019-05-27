@@ -11,8 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "express": "^4.17.0",
+    "jsonwebtoken": "^8.5.1",
     "mysql": "^2.17.1",
-    "nodemon": "^1.19.0"
+    "nodemon": "^1.19.0",
+    "swagger-node-codegen": "^1.6.3"
   }
 }
