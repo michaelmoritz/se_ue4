@@ -20,11 +20,17 @@ app.get("/events", (req, res) => {
 
   //query the DB
   connection.query(query, function(err, rows, fields) {
-    if (err) handleError(res, err);
-    else {
+    if (err) {
+      handleError(res, err);
+      return;
+    }
+    if (rows.length < 1) {
+      //no events in the DB
+      res.status(404).json({ message: "No events in the database" });
+    } else {
       //query successful
       console.log("events received");
-      res.json(JSON.stringify(rows));
+      res.json(rows);
     }
   });
 });
@@ -42,7 +48,7 @@ app.post("/events", (req, res) => {
       !req.body.maxParticipants ||
       !req.body.host
     ) {
-      res.status(400).send("Invalid input");
+      res.status(400).json({ message: "Invalid input" });
     } else {
       const query = `INSERT INTO event (name, description, location, date, maxParticipants, host)
     values("${req.body.name}", "${req.body.description}", 
@@ -55,7 +61,7 @@ app.post("/events", (req, res) => {
         else {
           //query successful
           console.log("1 record inserted");
-          res.status(200).send("Event added");
+          res.status(200).json({ message: "Event successfully added" });
         }
       });
     }
@@ -63,28 +69,51 @@ app.post("/events", (req, res) => {
 });
 
 app.get("/events/:id", (req, res) => {
+  if (isNaN(req.params.id)) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
+  }
   const query = `SELECT * FROM event WHERE id=${req.params.id};`;
 
   //query the DB
   connection.query(query, function(err, rows, fields) {
-    if (err) handleError(res, err);
-    else {
+    if (err) {
+      handleError(res, err);
+      return;
+    }
+    if (rows.length < 1) {
+      //Event not found
+      res
+        .status(404)
+        .json({ message: "The event could not be found in the database" });
+    } else {
       //query successful
       console.log("event received");
-      res.json(JSON.stringify(rows[0]));
+      res.json(rows[0]);
     }
   });
 });
 
 app.post("/events/:id", (req, res) => {
+  if (isNaN(req.params.id)) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
+  }
+  if (!isValidAuthToken(req.get("Authorization"))) {
+    //token is invalid
+    res.status(401).json({ message: "Auth failed" });
+    return;
+  }
   if (
     !req.body.name ||
     !req.body.location ||
     !req.body.date ||
-    !maxParticipants ||
+    !req.body.maxParticipants ||
     !req.body.host
   ) {
-    res.status(400).send("Invalid input");
+    res.status(400).json({ message: "Invalid input" });
   } else {
     const query = `UPDATE event 
     SET name="${req.body.name}", description="${req.body.description}", 
@@ -98,14 +127,19 @@ app.post("/events/:id", (req, res) => {
       else {
         //query successful
         console.log("1 record updated");
-        res.status(200).send("Event updated");
+        res.status(200).json({ message: "Event successfully added" });
       }
     });
   }
 });
 
 app.delete("/events/:id", (req, res) => {
-  if (!isValidAuthToken(req.header.Authorization)) {
+  if (isNaN(req.params.id)) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
+  }
+  if (!isValidAuthToken(req.get("Authorization"))) {
     //token is invalid
     res.status(401).json({ message: "Auth failed" });
   } else {
@@ -115,19 +149,30 @@ app.delete("/events/:id", (req, res) => {
     //query the DB
     connection.query(query, function(err, rows, fields) {
       //if query fails
-      if (err) handleError(res, err);
-      else {
+      if (err) {
+        handleError(res, err);
+        return;
+      }
+      if (rows.length < 1) {
+        res
+          .status(404)
+          .json({ message: "No event with the given ID in the database" });
+      } else {
         //query successful
         console.log("1 record deleted");
-        res.status(200);
-        res.send("Event successfully deleted");
+        res.status(200).json({ message: "Event successfully deleted" });
       }
     });
   }
 });
 
 app.get("/events/:id/registrations", (req, res) => {
-  if (!isValidAuthToken(req.header.Authorization)) {
+  if (isNaN(req.params.id)) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
+  }
+  if (!isValidAuthToken(req.get("Authorization"))) {
     //toke is invalid
     res.status(401).json({ message: "Auth failed" });
   } else {
@@ -136,39 +181,58 @@ app.get("/events/:id/registrations", (req, res) => {
 
     //query the DB
     connection.query(query, function(err, rows, fields) {
-      if (err) handleError(res, err);
-      else {
+      //if query fails
+      if (err) {
+        handleError(res, err);
+        return;
+      }
+      if (rows.length < 1) {
+        res.status(404).json({ message: "No registrations found" });
+      } else {
         //query successful
-        console.log("registrations received");
-        res.status(200).json(JSON.stringify(rows));
+        console.log("registrations received " + rows[0].escort);
+        res.status(200).json(rows);
       }
     });
   }
 });
 
 app.post("/events/:id/registrations", (req, res) => {
-  if (!isValidAuthToken(req.header.Authorization)) {
-    //token is invalid
-    res.status(401).json({ message: "Auth failed" });
+  if (isNaN(req.params.id)) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
   } else {
+    if (!isValidAuthToken(req.get("Authorization"))) {
+      //token is invalid
+      res.status(401).json({ message: "Auth failed" });
+    }
     //access granted
     if (!req.body.username || !req.body.eventID || !req.body.escort) {
-      res.status(400).send("Invalid input");
+      res.status(400).json({ message: "Invalid input" });
     } else {
       //input validated
-      //TBD: eventID von 1 in true umwandeln
       const query = `INSERT INTO registration(user, eventID, escort) values 
-  ("${req.body.username}", ${req.body.eventID}, ${req.body.escort});`;
+      ("${req.body.username}", ${req.body.eventID}, ${req.body.escort});`;
 
+      console.log(query);
+      console.log(req.body.escort);
       //query the DB
       connection.query(query, function(err, rows, fields) {
         //if query fails
-        if (err) handleError(res, err);
-        else {
+        if (err) {
+          handleError(res, err);
+          return;
+        }
+        if (rows.length < 1) {
+          res.status(400).json({ message: "Invalid input" });
+          return;
+        } else {
           //query successful
           console.log("1 record inserted");
-          res.status(200);
-          res.send("User successfully registered for the event");
+          res
+            .status(200)
+            .json({ message: "Registration successfully inserted" });
         }
       });
     }
@@ -176,7 +240,12 @@ app.post("/events/:id/registrations", (req, res) => {
 });
 
 app.delete("/events/:id/registrations/:regNr", (req, res) => {
-  if (!isValidAuthToken(req.header.Authorization)) {
+  if (isNaN(req.params.id || isNaN(req.params.regNr))) {
+    //given id is not a number
+    res.status(400).json({ message: "Invalid input" });
+    return;
+  }
+  if (!isValidAuthToken(req.get("Authorization"))) {
     //token is invalid
     res.status(401).json({ message: "Auth failed" });
   } else {
@@ -188,12 +257,20 @@ app.delete("/events/:id/registrations/:regNr", (req, res) => {
     //query the DB
     connection.query(query, function(err, rows, fields) {
       //if query fails
-      if (err) handleError(res, err);
-      else {
+      if (err) {
+        handleError(res, err);
+        return;
+      }
+      if (rows.length < 1) {
+        res.status(404).json({
+          message: "No registration with the given Nr. in the database"
+        });
+      } else {
         //query successful
         console.log("1 record deleted");
-        res.status(200);
-        res.send("User successfully unregistered from the event");
+        res
+          .status(200)
+          .json({ message: "User successfully unregistered from the event" });
       }
     });
   }
@@ -201,30 +278,32 @@ app.delete("/events/:id/registrations/:regNr", (req, res) => {
 
 app.post("/user", (req, res) => {
   if (!req.body.username || !req.body.password) {
-    res.status(400).send("Invalid input");
+    res.status(400).json({ message: "Invalid input" });
+    //valid password
   } else {
+    //hash user password
     bcrypt.hash(req.body.password, 1, (err, hash) => {
       if (err) {
-        res.status(400).send("Invalid password");
+        res.status(400).json({ message: "Invalid password" });
       } else {
         const query = `INSERT INTO user(name, password) values 
         ("${req.body.username}", "${hash}");`;
 
-        //connection.connect();
-        console.log("sending query...");
+        //query the DB
         connection.query(query, function(err, rows, fields) {
+          //if query fails
           if (err) handleError(res, err);
-          console.log("1 record inserted");
-          res.status(200);
-          res.send("User successfully added");
+          else {
+            //query successful
+            console.log("1 record inserted");
+            res.status(200).json({ message: "User successfully added" });
+          }
         });
-        //connection.end();
       }
     });
   }
 });
 
-//TBD
 app.post("/user/login", (req, res) => {
   if (!req.body.username || !req.body.password) {
     res.status(400).send("Invalid input");
@@ -232,19 +311,26 @@ app.post("/user/login", (req, res) => {
     const query = `SELECT * FROM user WHERE name= 
     "${req.body.username}";`;
 
-    //connection.connect();
+    //query the DB
     connection.query(query, function(err, rows, fields) {
-      if (err) handleError(res, err);
+      //if query fails
+      if (err) {
+        handleError(res, err);
+        return;
+      }
       if (rows.length < 1) {
+        //invalid user
         res.status(401).json({ message: "Auth failed" });
       } else {
         console.log("user found in Database");
-        //TBD generate Token
+        //Compare password from the DB with input password
         bcrypt.compare(req.body.password, rows[0].password, (err, result) => {
           if (err) {
+            //passwords do not match
             res.status(401).json({ message: "Auth failed" });
           } else {
             if (result) {
+              //passwords match, generate Token
               const token = jwt.sign({ name: req.body.username }, secretKey, {
                 expiresIn: "1h"
               });
@@ -258,15 +344,16 @@ app.post("/user/login", (req, res) => {
         });
       }
     });
-    //connection.end();
   }
 });
 
+//function for handling db-query errors
 var handleError = function(res, err) {
-  res.status(500).json(JSON.stringify(err));
-  console.log(err);
+  res.status(500).json({ code: err.code });
+  //console.log(err);
 };
 
+//function for validating tokens
 var isValidAuthToken = function(token) {
   if (!token) {
     return false;
@@ -285,6 +372,3 @@ var isValidAuthToken = function(token) {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`listening on port ${port}...`));
-
-//TBD: Einführen von Registration ID in der DB
-//TBD: Delete für Registration/Event
