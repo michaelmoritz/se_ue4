@@ -2,9 +2,13 @@ const mysql = require("mysql");
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cors = require('cors')
 
 const app = express();
+
 app.use(express.json());
+app.use(cors());
+app.options('*', cors())
 
 const connection = mysql.createConnection({
   host: "veranstaltungsservice.csgcsrajxclt.us-east-2.rds.amazonaws.com",
@@ -12,7 +16,6 @@ const connection = mysql.createConnection({
   password: "ServiceEngineering2019",
   database: "VeranstaltungsService"
 });
-
 const secretKey = "ServiceEngineering2019";
 
 app.get("/events", (req, res) => {
