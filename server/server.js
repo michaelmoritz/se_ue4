@@ -39,6 +39,7 @@ app.get("/events", (req, res) => {
 });
 
 app.post("/events", (req, res) => {
+  console.log(req.body)
   if (!isValidAuthToken(req.get("Authorization"))) {
     //token is invalid
     res.status(401).json({ message: "Auth failed" });
@@ -55,7 +56,7 @@ app.post("/events", (req, res) => {
     } else {
       const query = `INSERT INTO event (name, description, location, date, maxParticipants, host)
     values("${req.body.name}", "${req.body.description}", 
-    "${req.body.location}", "${req.body.date}", ${req.body.maxParticipants}, 
+    "${req.body.location}", "${req.body.date}", "${req.body.maxParticipants}", 
     "${req.body.host}");`;
 
       //query the DB
@@ -121,7 +122,7 @@ app.post("/events/:id", (req, res) => {
     const query = `UPDATE event 
     SET name="${req.body.name}", description="${req.body.description}", 
     location="${req.body.location}", date="${req.body.date}", 
-    maxParticipants=${req.body.maxParticipants}, host="${req.body.host}"
+    maxParticipants="${req.body.maxParticipants}", host="${req.body.host}"
     WHERE id=${req.params.id};`;
 
     //query the DB
@@ -280,6 +281,7 @@ app.delete("/events/:id/registrations/:regNr", (req, res) => {
 });
 
 app.post("/user", (req, res) => {
+  console.log(req.body)
   if (!req.body.username || !req.body.password) {
     res.status(400).json({ message: "Invalid input" });
     //valid password

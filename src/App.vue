@@ -1,28 +1,55 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="userview">
+    <v-app class="grey lighten-4">
+      <v-content class="mx-4 mb-4">
+        <Navbar/>
+        <router-view></router-view>
+      </v-content>
+    </v-app>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 
-export default {
-  name: 'app',
-  components: {
-    HelloWorld
+  import Navbar from "./components/Navbar";
+  export default {
+    name: 'userview',
+    components: {
+      Navbar
+
+    },
+    data() {
+      return {
+        events: [],
+        authorization: localStorage.sessionkey,
+        resAddEvent: '',
+      }
+    },
+    methods: {
+      async deleteEvent(id) {
+        try {
+          await fetch(`http://localhost:3000/events/${id}`, {
+            method: "DELETE",
+            headers: { 'Content-type': 'application/json; charset=UTF-8', 'Authorization': localStorage.sessionkey },
+          });
+          this.events = this.events.filter(event => event.id !== id);
+        } catch (error) {
+          //console.error(error);
+        }
+      },
+      async editEvent(id, updatedEvent) {
+        try {
+          const response = await fetch(`http://localhost:3000/events/${id}`, {
+            method: 'POST',
+            body: JSON.stringify(updatedEvent),
+            headers: { 'Content-type': 'application/json; charset=UTF-8', 'Authorization': localStorage.sessionkey },
+          })
+          const data = await response.json()
+          this.events = this.events.map(event => (event.id === id ? data : event))
+        } catch (error) {
+          //console.warn(error)
+        }
+      },
+    }
   }
-}
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
