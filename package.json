@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "init-server": "node server/server.js",
+    "init-vue": "npm run serve",
+    "start": "npm run init-server & npm run init-vue",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"

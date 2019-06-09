@@ -39,7 +39,6 @@ app.get("/events", (req, res) => {
 });
 
 app.post("/events", (req, res) => {
-  console.log(req.body)
   if (!isValidAuthToken(req.get("Authorization"))) {
     //token is invalid
     res.status(401).json({ message: "Auth failed" });
