@@ -1,6 +1,5 @@
 const mysql = require("mysql");
 const express = require("express");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require('cors')
 
@@ -286,25 +285,24 @@ app.post("/user", (req, res) => {
     //valid password
   } else {
     //hash user password
-    bcrypt.hash(req.body.password, 1, (err, hash) => {
+    /*bcrypt.hash(req.body.password, 1, (err, hash) => {
       if (err) {
         res.status(400).json({ message: "Invalid password" });
-      } else {
-        const query = `INSERT INTO user(name, password) values 
-        ("${req.body.username}", "${hash}");`;
+      } else {*/
+    const query = `INSERT INTO user(name, password) values 
+    ("${req.body.username}", "${hash}");`;
 
-        //query the DB
-        connection.query(query, function(err, rows, fields) {
-          //if query fails
-          if (err) handleError(res, err);
-          else {
-            //query successful
-            console.log("1 record inserted");
-            res.status(200).json({ message: "User successfully added" });
-          }
-        });
+    //query the DB
+    connection.query(query, function(err, rows, fields) {
+      //if query fails
+      if (err) handleError(res, err);
+      else {
+        //query successful
+        console.log("1 record inserted");
+        res.status(200).json({ message: "User successfully added" });
       }
     });
+      //}
   }
 });
 
@@ -328,12 +326,7 @@ app.post("/user/login", (req, res) => {
       } else {
         console.log("user found in Database");
         //Compare password from the DB with input password
-        bcrypt.compare(req.body.password, rows[0].password, (err, result) => {
-          if (err) {
-            //passwords do not match
-            res.status(401).json({ message: "Auth failed" });
-          } else {
-            if (result) {
+        if(req.body.password === rows[0].password){
               //passwords match, generate Token
               const token = jwt.sign({ name: req.body.username }, secretKey, {
                 expiresIn: "1h"
@@ -341,11 +334,10 @@ app.post("/user/login", (req, res) => {
               res
                 .status(200)
                 .json({ message: "Auth successful", token: token });
-            } else {
-              res.status(401).json({ message: "Auth failed" });
-            }
-          }
-        });
+        }
+        else{
+          res.status(401).json({ message: "Auth failed" });
+        }
       }
     });
   }
