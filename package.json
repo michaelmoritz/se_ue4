@@ -11,11 +11,19 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "ajv": "^6.10.0",
+    "aws-cli": "0.0.2",
     "core-js": "^2.6.5",
+    "docker": "^1.0.0",
+    "docker-cli-js": "^2.5.2",
+    "node": "^12.4.0",
     "vee-validate": "^2.2.9",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
     "vuetify": "^1.5.5"
+  },
+  "optionalDependencies": {
+    "fsevents": "1.2.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.7.0",
