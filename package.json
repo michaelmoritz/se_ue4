@@ -5,7 +5,7 @@
   "scripts": {
     "start:dev": "webpack-dev-server",
     "init-server": "node server/server.js",
-    "init-vue": "npm run serve --inline --hot --host 0.0.0.0 --public morning-mesa-53110.herokuapp.com\"",
+    "init-vue": "npm run serve",
     "start": "npm run init-vue",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

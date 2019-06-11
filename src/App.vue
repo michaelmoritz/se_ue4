@@ -39,7 +39,7 @@
       },
       async editEvent(id, updatedEvent) {
         try {
-          const response = await fetch(`https://protected-wave-30392.herokuapp.com/events/${id}`, {
+          const response = await fetch(`https://protected-wave-30392.herokuapp.comherok/events/${id}`, {
             method: 'POST',
             body: JSON.stringify(updatedEvent),
             headers: { 'Content-type': 'application/json; charset=UTF-8', 'Authorization': localStorage.sessionkey },
