@@ -40,7 +40,7 @@
     methods: {
       async Login() {
         try {
-          const response = await fetch('http://localhost:3000/user/login', {
+          const response = await fetch('https://protected-wave-30392.herokuapp.com/user/login', {
             method: 'POST',
             body: JSON.stringify(this.user),
             headers: { 'Content-type': 'application/json; charset=UTF-8' },
