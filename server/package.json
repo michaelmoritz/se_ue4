@@ -20,7 +20,7 @@
     "swagger-node-codegen": "^1.6.3"
   },
   "devDependencies": {
-    "webpack": "^4.33.0",
+    "webpack": "^5.75.0",
     "webpack-dev-server": "^3.7.1"
   },
   "optionalDependencies": {
